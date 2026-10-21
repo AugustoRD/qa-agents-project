@@ -1,22 +1,22 @@
-# QA Agents Workflow - Orquestador Geral
+# QA Agents Workflow - Orquestrador Geral
 
 Este projeto automatiza o fluxo de Garantia da Qualidade (QA) para:
 
 1. Analisar requisitos ou User Stories.
-2. Decompor as demandas em Cenários e Casos de Test(CTs) estruturados em Gherkin.
+2. Decompor as demandas em Cenários e Casos de Teste (CTs) estruturados em Gherkin.
 3. Persistir as especificações em arquivos locais para versionamento e auditoria.
-4. Documentar os Casos de teste em base de dados no Notion via MCP.
-5. Criar tarefas e tickets de execução no Jira correspondentes a cada CT.
+4. Documentar os Casos de Teste em base de dados no Notion via MCP.
+5. Criar tarefas e tickets de execução no Jira correspondentes a cada CT *(quando aplicável/disponível)*.
 
 ## Equipe de Subagents
 
 1. **qa-analyst** (`.agents/agents/qa-analyst.md`):
-   - Especialista em Engenharia de QA
+   - Especialista em Engenharia de QA.
    - Analisa especificações e gera cenários e casos de teste seguindo a skill `gerador-casos-teste`.
 2. **notion-documenter** (`.agents/agents/notion-documenter.md`):
-   - Faz o parse do cenários/CTs locais e insere os casos de teste na tabela notion via MCP.
-3. **jira-manager** :
-   - Cria as issues/tarefas correspondentes a cada caso de teste no Jira.
+   - Faz o parse dos cenários/CTs locais e insere os casos de teste na tabela do Notion via MCP.
+3. **jira-manager** *(Planejado / Sob Demanda)*:
+   - Cria as issues/tarefas correspondentes a cada caso de teste no Jira (acionado apenas quando configurado em `.agents/agents/` e solicitado pelo usuário).
 
 # Fluxo Padrão de Execução
 
@@ -26,14 +26,14 @@ Quando um objetivo envolver a geração de testes para uma User Story ou requisi
    - O agente orquestrador lê o arquivo de entrada com o requisito/User Story.
 2. **Etapa 2 - Elaboração de testes:**
    - Aciona o subagente `qa-analyst` para estruturar os cenários e casos de teste cobrindo Caminho Feliz, Alternativo e Exceção/Segurança.
-   - Salve a especificação resultande no caminho `artifacts/casos_teste_<nome_da_us>.md`.
+   - O `qa-analyst` retorna o conteúdo Markdown estruturado e o **Orquestrador** salva a especificação resultante no caminho `artifacts/casos_teste_<nome_da_us>.md`.
 3. **Etapa 3 - Portão de Validação Humana (Human-in-the-Loop):**
    - Apresente um resumo quantitativo e os principais cenários gerados no terminal.
-   - **PAUSE e solicite a confirmação explícita do usuário** antes de disparar qualquer envio para ferramentas externas.
+   - **PAUSE e solicite a confirmação explícita do usuário** utilizando a ferramenta `ask_question` (garantindo o bloqueio seguro mesmo em execuções com `/goal`) antes de disparar qualquer envio para ferramentas externas.
 4. **Etapa 4 - Sincronização Externa (notion-documenter & jira-manager):**
-   - Após a aprovação do usuário:
+   - Após a aprovação explícita do usuário:
      - Acione `notion-documenter` para popular a base de dados do Notion.
-     - Acione `jira-manager` para abrir os tickets correspondentes no Jira.
+     - Acione `jira-manager` para abrir os tickets correspondentes no Jira *(somente se solicitado pelo usuário e se o subagente estiver ativo)*.
    - Retorne os links finais das páginas e tickets criados.
 
 ## Comandos e Gatilhos Recomendados
