@@ -26,14 +26,10 @@ Toda especificação de testes segue a relação pai-filho estrita abaixo no pro
 
 ## 2. Procedimento Passo a Passo de Execução
 
-### Passo 1: Descoberta de Contexto e Metadados (Pré-voo)
+### Passo 1: Descoberta de Contexto (Pré-voo)
 
-1. **Obter `cloudId`:** Chame a ferramenta `getAccessibleAtlassianResources` para descobrir o `cloudId` e a URL base do site Atlassian Cloud conectado.
-2. **Inspecionar Tipos de Issue do Projeto `QAA`:** Chame `getJiraProjectIssueTypesMetadata` passando o `cloudId` e `projectIdOrKey: "QAA"` (ou `projectKey: "QAA"`).
-   - Identifique os nomes/IDs exatos configurados no idioma do projeto para:
-     - **Nível 1:** `Epic` / `Épico`
-     - **Nível 2:** `Task` / `Tarefa`
-     - **Nível 3:** `Sub-task` / `Subtarefa` / `Sub-tarefa`
+1. **Obter `cloudId`:** Chame a ferramenta `getAccessibleAtlassianResources` uma única vez por sessão para descobrir o `cloudId` e a URL base do site Atlassian Cloud conectado, reutilizando-o em todas as chamadas subsequentes.
+2. **Tipos de Issue do Projeto `QAA`:** Utilize os tipos correspondentes aos 3 níveis (`Epic` / `Épico`, `Task` / `Tarefa`, `Sub-task` / `Subtarefa`). Caso o Jira rejeite o nome do tipo de issue por diferença de idioma na primeira chamada de `createJiraIssue`, utilize a lista `allowedValues` e o `repairHint` retornados pela própria ferramenta (ou consulte via `executeRead` com `name: "listJiraProjectIssueTypesMetadata"` e `inputs: { "projectIdOrKey": "QAA" }`).
 
 ### Passo 2: Verificação de Idempotência (Prevenção de Duplicatas)
 
@@ -50,13 +46,13 @@ project = "QAA" AND summary ~ "USXX"
 
 ### Passo 3: Criação Top-Down Respeitando Dependências (`createJiraIssue`)
 
-Execute a criação estritamente na ordem **Nível 1 → Nível 2 → Nível 3**, pois cada nível depende da chave (`key`) gerada no nível imediatamente superior:
+Execute a criação estritamente na ordem **Nível 1 → Nível 2 → Nível 3** seguindo o schema da ferramenta `createJiraIssue`, pois cada nível depende da chave (`key`) gerada no nível imediatamente superior:
 
 #### 3.1. Nível 1 — Criar (ou Reutilizar) o Épico da User Story
-- **Parâmetros de `createJiraIssue`:**
+- **Mapeamento para `createJiraIssue`:**
   - `cloudId`: `<CLOUD_ID>`
   - `projectKey`: `"QAA"`
-  - `issueTypeName`: `"Epic"` (ou nome equivalente retornado no Passo 1)
+  - `issueType`: `"Epic"` (ou `"Épico"`)
   - `summary`: `[USXX] - [Título da Funcionalidade]`
   - `description`:
     ```markdown
@@ -64,7 +60,7 @@ Execute a criação estritamente na ordem **Nível 1 → Nível 2 → Nível 3**
 
     - **Funcionalidade:** [Título da Funcionalidade]
     - **Arquivo de Referência (Requisito):** `[caminho/do/requisito.md]`
-    - **Artefato de Testes:** `[artifacts/casos_teste_usxx.md]`
+    - **Artefato de Testes:** `[artifacts/casos_teste_<nome_da_us>.md]`
     - **Total de Cenários:** [N]
     - **Total de Casos de Teste:** [M]
     ```
@@ -72,10 +68,10 @@ Execute a criação estritamente na ordem **Nível 1 → Nível 2 → Nível 3**
 
 #### 3.2. Nível 2 — Criar (ou Reutilizar) as Tasks de cada Cenário
 Para cada bloco `### Cenário: [USXX-CN-XX] - [Título do Cenário]`:
-- **Parâmetros de `createJiraIssue`:**
+- **Mapeamento para `createJiraIssue`:**
   - `cloudId`: `<CLOUD_ID>`
   - `projectKey`: `"QAA"`
-  - `issueTypeName`: `"Task"` (ou `"Tarefa"`)
+  - `issueType`: `"Task"` (ou `"Tarefa"`)
   - `parent`: `<EPIC_KEY>`
   - `summary`: `[USXX-CN-XX] - [Título do Cenário]`
   - `description`:
@@ -92,10 +88,10 @@ Para cada bloco `### Cenário: [USXX-CN-XX] - [Título do Cenário]`:
 
 #### 3.3. Nível 3 — Criar as Sub-tasks de cada Caso de Teste
 Para cada bloco `##### Caso de Teste: [USXX-CT-XXX] - [Título do Caso de Teste]` pertencente ao cenário `USXX-CN-XX`:
-- **Parâmetros de `createJiraIssue`:**
+- **Mapeamento para `createJiraIssue`:**
   - `cloudId`: `<CLOUD_ID>`
   - `projectKey`: `"QAA"`
-  - `issueTypeName`: `"Sub-task"` (ou `"Subtarefa"`)
+  - `issueType`: `"Sub-task"` (ou `"Subtarefa"`)
   - `parent`: `<SCENARIO_TASKS["USXX-CN-XX"]>`
   - `summary`: `[USXX-CT-XXX] - [Título do Caso de Teste]`
   - `description`:

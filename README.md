@@ -28,7 +28,7 @@ Coordena o fluxo em 4 etapas com validação humana obrigatória antes de realiz
 - **`gerador-casos-teste`** (`.agents/skills/gerador-casos-teste/SKILL.md`):
   Diretrizes de engenharia de testes (Particionamento de Equivalência, Análise de Valor Limite, Tabelas de Decisão, Transição de Estados e Heurísticas OWASP) e template oficial de saída compatível tanto com o Notion quanto com a hierarquia de 3 níveis do Jira.
 - **`integracao-jira`** (`.agents/skills/integracao-jira/SKILL.md`):
-  Procedimento passo a passo para descoberta de `cloudId` e metadados de Issue Types, prevenção de duplicatas via JQL e criação top-down de issues no projeto `QAA`.
+  Procedimento passo a passo para descoberta de `cloudId`, prevenção de duplicatas via JQL e criação top-down de issues no projeto `QAA`.
 
 ---
 
@@ -50,7 +50,7 @@ Certifique-se de que os servidores `notion` e `atlassian` estão configurados no
 {
   "mcpServers": {
     "notion": {
-      "serverUrl": "https://mcp.notion.com/mcp",
+      "url": "https://mcp.notion.com/mcp",
       "tools": {
         "notion-create-pages": {
           "eager": true
@@ -61,7 +61,7 @@ Certifique-se de que os servidores `notion` e `atlassian` estão configurados no
       }
     },
     "atlassian": {
-      "serverUrl": "https://mcp.atlassian.com/v2/mcp"
+      "url": "https://mcp.atlassian.com/v2/mcp"
     }
   }
 }

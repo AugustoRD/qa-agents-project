@@ -12,21 +12,23 @@ Ao analisar uma especificação de requisito ou User Story (ex.: `US01`, `US02`)
 
 ---
 
-## 1. Técnicas Obrigatórias de Desenho de Testes (ISTQB v4.0 & OWASP)
+## 1. Técnicas Obrigatórias de Desenho de Testes (ISTQB v4.0 — Abordagem Caixa-Preta)
 
-Não gere apenas testes óbvios. Aplique ativamente as seguintes técnicas sobre cada Critério de Aceite:
+Não gere apenas testes óbvios. Aplique ativamente as seguintes técnicas sobre cada Critério de Aceite, mantendo **fidelidade estrita ao escopo da User Story**:
 
-1. **Particionamento de Equivalência (EP):** Identifique classes de entradas válidas e inválidas (campos vazios, formatos incorretos, tipos incompatíveis, normalização como `trim`/`lowercase`) sem criar testes redundantes para a mesma partição.
-2. **Análise de Valor Limite (BVA):** Sempre que houver limites numéricos, monetários, prazos de tempo, tamanhos de campo ou limites de tentativas, crie casos de teste para os **valores de fronteira**:
+1. **Particionamento de Equivalência (EP):** Identifique classes de entradas válidas e inválidas (campos vazios, formatos incorretos, caracteres especiais não permitidos como `"@#$%"`, normalização de espaços e letras maiúsculas/minúsculas) sem criar testes redundantes para a mesma partição.
+2. **Análise de Valor Limite (BVA):** Sempre que houver limites numéricos, monetários, prazos de tempo, tamanhos de campo ou limites de tentativas definidos na US, crie casos de teste para os **valores de fronteira**:
    - Limite inferior inválido (`mínimo - 1`), no limite exato (`mínimo`) e acima do limite (`máximo + 1`).
 3. **Tabelas de Decisão e Transição de Estados:**
    - Combine regras de negócio interdependentes (ex.: cupom válido + produto não elegível + frete).
-   - Teste mudanças de ciclo de vida e revogação dinâmica (ex.: token ativo -> utilizado -> expirado; remoção de item do carrinho que invalida regra previamente atendida).
-4. **Heurísticas de Segurança e Confiabilidade (OWASP):**
-   - **Prevenção a Abuso e Força Bruta:** Rate limiting por IP/conta/sessão (`HTTP 429`).
-   - **Privacidade e Enumeração:** Mensagens e tempos de resposta idênticos para evitar enumeração de usuários/recursos.
-   - **Concorrência (Race Conditions):** Requisições simultâneas disputando recursos de uso único ou saldo/limite global.
-   - **Injeção e Sanitização:** Tratamento seguro de payloads maliciosos (SQLi, XSS) sem expor stack traces ou erros internos (`HTTP 500`).
+   - Teste mudanças de ciclo de vida e revogação dinâmica (ex.: benefício ativo -> utilizado -> expirado; remoção de item do carrinho que invalida regra previamente atendida).
+4. **Validações de Segurança Funcional e Prevenção a Uso Indevido:**
+   - **Restrições de Uso e Identidade:** Valide bloqueios de reutilização por CPF/usuário, acúmulo indevido de benefícios ou limites de tentativas **apenas quando previstos na User Story**.
+   - **Simultaneidade sob a Ótica do Usuário:** Teste tentativas simultâneas (ex.: mesmo usuário com duas abas abertas ou dois clientes disputando o último uso disponível de um benefício) descrevendo o resultado funcional esperado na tela, sem jargões internos de banco de dados.
+   - **Proibição de Scripts e Tags HTML (`<script>` / SQLi):** **NUNCA** insira tags HTML/JavaScript (`<script>alert(1)</script>`) ou comandos SQL (`' OR 1=1 --`) nos passos BDD ou resultados esperados. Para validar entradas malformadas, utilize apenas caracteres especiais comuns (ex.: `"CUPOM@#$%"`).
+5. **Regra de Ouro — Não-Alucinação Técnica (Caixa-Preta):**
+   - **NUNCA** invente códigos de status HTTP (`HTTP 200`, `400`, `404`, `409`, `422`, `429`, `500`), cabeçalhos de rede (`Retry-After`, `X-Forwarded-For`), objetos/campos JSON (`subtotal`, `discount`, `max_uses`) ou detalhes de implementação de banco de dados (`lock pessimista`, `TTL`, `queries parametrizadas`) se a User Story não especificar contratos técnicos de API.
+   - Escreva os Casos de Teste sob a perspectiva de **comportamento observável pelo usuário e regras de negócio**.
 
 ---
 
@@ -36,7 +38,7 @@ Agrupe os Casos de Teste nas três categorias abaixo:
 
 - **Caminho Feliz**: Fluxos principais de sucesso onde todas as pré-condições e regras de negócio são atendidas.
 - **Caminho Alternativo**: Validações de campos obrigatórios, formatos inválidos, valores limite (BVA), regras de negócio secundárias e revogações automáticas.
-- **Exceção e Segurança**: Dados inexistentes/expirados/esgotados, tentativas de reutilização indevida, bloqueios de segurança, concorrência e ataques de injeção/força bruta.
+- **Exceção e Segurança**: Dados inexistentes/expirados/esgotados, tentativas de reutilização indevida (ex.: mesmo CPF), tentativas de burlar regras de negócio em sessões simultâneas e entradas com caracteres inválidos.
 
 ---
 
@@ -78,8 +80,6 @@ Gere o documento indo direto aos Cenários e Casos de Teste, seguindo exatamente
 - **Categoria:** Caminho Feliz | Caminho Alternativo | Exceção e Segurança
 - **Objetivo:** [Explicação concisa do que este cenário avalia]
 
-**Caso de Teste (CT):**
-
 ##### Caso de Teste: [USXX-CT-XXX] - [Título sucinto da ação e resultado esperado]
 
 - **Tipo:** Funcional | Validação | Segurança | Exceção
@@ -90,7 +90,7 @@ Gere o documento indo direto aos Cenários e Casos de Teste, seguindo exatamente
   **Quando** [ação executada pelo usuário ou requisição disparada]
   **E** [condição ou ação complementar, se aplicável]
   **Então** [resultado esperado observável no sistema]
-- **Resultado Esperado Detalhado:** [Comportamento exato da interface, status HTTP/payload da API, persistência no banco e mensagens exatas exibidas]
+- **Resultado Esperado Detalhado:** [Comportamento observável na interface, reflexo exato nos valores/estados do pedido e mensagens exatas exibidas ao usuário (não invente status HTTP, cabeçalhos, payloads JSON ou campos de banco não descritos na US)]
 ```
 
 ---
@@ -104,3 +104,4 @@ Antes de finalizar a resposta, verifique internamente:
 - [ ] O campo `Tipo` contém apenas **um** valor permitido (`Funcional`, `Validação`, `Segurança` ou `Exceção`)?
 - [ ] O campo `Prioridade` contém apenas **um** valor permitido (`Alta`, `Média` ou `Baixa`)?
 - [ ] Todos os Critérios de Aceite da User Story estão cobertos e testados com valores limite (BVA)?
+- [ ] O documento está **100% livre** de detalhes técnicos inventados (sem códigos HTTP, sem cabeçalhos de rede, sem JSON e sem jargões de banco) e **sem tags `<script>` ou comandos SQL**?

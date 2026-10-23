@@ -9,8 +9,6 @@
 - **Categoria:** Caminho Feliz
 - **Objetivo:** Validar o acesso à tela de recuperação a partir do login, a geração e envio do link com token único para e-mail cadastrado e a utilização do token dentro do prazo de validade de 15 minutos.
 
-**Caso de Teste (CT):**
-
 ##### Caso de Teste: [US01-CT-001] - Navegar para a tela de recuperação de senha através do link na tela de login
 
 - **Tipo:** Funcional
@@ -51,8 +49,6 @@
 
 - **Categoria:** Caminho Alternativo
 - **Objetivo:** Validar o tratamento de entradas inválidas ou vazias no campo de e-mail (Particionamento de Equivalência), a normalização de dados (espaços e letras maiúsculas) e o comportamento no limite exato permitido antes do bloqueio de Rate Limit.
-
-**Caso de Teste (CT):**
 
 ##### Caso de Teste: [US01-CT-004] - Solicitar recuperação informando e-mail com letras maiúsculas e espaços nas extremidades
 
@@ -119,8 +115,6 @@
 - **Categoria:** Exceção e Segurança
 - **Objetivo:** Garantir que e-mails não cadastrados recebam resposta genérica indistinguível (OWASP User Enumeration), e validar que tokens expirados (> 15 min) ou já utilizados sejam rejeitados.
 
-**Caso de Teste (CT):**
-
 ##### Caso de Teste: [US01-CT-009] - Solicitar recuperação de senha informando um e-mail não cadastrado na base
 
 - **Tipo:** Segurança
@@ -161,8 +155,6 @@
 
 - **Categoria:** Exceção e Segurança
 - **Objetivo:** Validar o bloqueio do formulário após 5 tentativas consecutivas do mesmo IP, a proteção contra burla de cabeçalhos, condições de corrida no uso do token e injeção de código malicioso.
-
-**Caso de Teste (CT):**
 
 ##### Caso de Teste: [US01-CT-012] - Bloquear o formulário na 6ª tentativa consecutiva de recuperação a partir do mesmo IP (Rate Limit)
 
